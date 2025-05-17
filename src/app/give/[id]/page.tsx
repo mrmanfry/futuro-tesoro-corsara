@@ -63,7 +63,7 @@ async function getCollection(id: string) {
   };
 }
 
-export default async function GivePage({ params }) {
+export default async function GivePage({ params }: { params: { id: string } }) {
   const collection = await getCollection(params.id);
 
   if (!collection) {
@@ -93,7 +93,7 @@ export default async function GivePage({ params }) {
           </div>
 
           <div className="lg:sticky lg:top-8">
-            <ContributionForm collection={collection} />
+            <ContributionForm collectionId={collection.id} />
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { GiftIcon, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
 import { CollectionCard } from './collection-card';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
@@ -92,9 +93,11 @@ export function CollectionsGrid({ userId }: CollectionsGridProps) {
         title="Nessuna raccolta trovata"
         description="Non hai ancora creato nessuna raccolta. Crea la tua prima raccolta per iniziare!"
         action={
-          <Button href="/collections/new">
-            <GiftIcon className="mr-2 h-5 w-5" />
-            Crea Raccolta
+          <Button asChild>
+            <Link href="/create-gift">
+              <GiftIcon className="mr-2 h-5 w-5" />
+              Crea Raccolta
+            </Link>
           </Button>
         }
       />
@@ -118,7 +121,9 @@ export function CollectionsGrid({ userId }: CollectionsGridProps) {
           <EmptyState
             title="Nessuna raccolta attiva"
             description="Non hai raccolte attive al momento."
-            action={<Button href="/collections/new">Crea Raccolta</Button>}
+            action={<Button asChild>
+              <Link href="/create-gift">Crea Raccolta</Link>
+            </Button>}
           />
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

@@ -28,7 +28,7 @@ const HeroSection = () => {
                 className="rounded-full border-0 px-8 text-base font-semibold shadow-md"
                 style={{ background: '#2b6eff', color: '#fff' }}
               >
-                <Link href="/crea-regalo" className="flex items-center gap-2">
+                <Link href="/create-gift" className="flex items-center gap-2">
                   Crea un Regalo
                   <ArrowRight
                     size={16}

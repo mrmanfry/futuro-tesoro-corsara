@@ -30,12 +30,12 @@ export function CollectionStats({ collection }: CollectionStatsProps) {
       try {
         setIsLoading(true);
 
-        // Fetch total amount
-        const { data: contributions, error: contributionsError } =
-          await supabase
-            .from('gift_contributions')
-            .select('amount')
-            .eq('collection_id', collection.id);
+        // Fetch contributions with completed status
+        const { data: contributions, error: contributionsError } = await supabase
+          .from('gift_contributions')
+          .select('amount')
+          .eq('collection_id', collection.id)
+          .eq('payment_status', 'completed');
 
         if (contributionsError) {
           throw contributionsError;
@@ -73,51 +73,53 @@ export function CollectionStats({ collection }: CollectionStatsProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="grid gap-4 md:grid-cols-3">
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle>Statistiche</CardTitle>
-          <CardDescription>Riepilogo dei fondi raccolti</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Totale Raccolto</CardTitle>
+          <TrendingUp className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">
-                Totale raccolto
-              </span>
-              <span className="text-2xl font-bold">
-                €{totalAmount.toFixed(2)}
-              </span>
-            </div>
+          <div className="text-2xl font-bold">€{totalAmount.toFixed(2)}</div>
+          {collection.target_amount && (
+            <Progress
+              value={calculateProgress()}
+              className="mt-2 h-2"
+            />
+          )}
+        </CardContent>
+      </Card>
 
-            <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">
-                Contributori
-              </span>
-              <span className="text-2xl font-bold">{contributionsCount}</span>
-            </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Contributi</CardTitle>
+          <Users className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{contributionsCount}</div>
+          <p className="text-xs text-muted-foreground">
+            {contributionsCount === 1
+              ? 'Contributo ricevuto'
+              : 'Contributi ricevuti'}
+          </p>
+        </CardContent>
+      </Card>
 
-            <div className="flex flex-col">
-              <span className="text-sm text-muted-foreground">Obiettivo</span>
-              <span className="text-2xl font-bold">
-                {collection.target_amount
-                  ? `€${collection.target_amount.toFixed(2)}`
-                  : '−'}
-              </span>
-            </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Obiettivo</CardTitle>
+          <Gift className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">
+            {collection.target_amount
+              ? `€${collection.target_amount.toFixed(2)}`
+              : 'Libero'}
           </div>
-
-          {collection.target_amount > 0 && (
-            <div className="mt-4">
-              <div className="mb-1 flex justify-between text-sm">
-                <span>{calculateProgress()}% completato</span>
-                <span>
-                  €{totalAmount.toFixed(2)} / €
-                  {collection.target_amount.toFixed(2)}
-                </span>
-              </div>
-              <Progress value={calculateProgress()} className="h-2" />
-            </div>
+          {collection.target_amount && (
+            <p className="text-xs text-muted-foreground">
+              {calculateProgress()}% completato
+            </p>
           )}
         </CardContent>
       </Card>

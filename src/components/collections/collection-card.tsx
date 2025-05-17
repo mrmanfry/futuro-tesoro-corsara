@@ -1,7 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { GiftIcon, Calendar, Users, TrendingUp } from 'lucide-react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useEffect, useState } from 'react';
 
 import {
   Card,
@@ -20,35 +24,54 @@ interface CollectionCardProps {
 }
 
 export function CollectionCard({ collection }: CollectionCardProps) {
-  // Calcola lo stato della raccolta
-  const getStatusBadge = () => {
-    switch (collection.status) {
-      case 'active':
-        return <Badge variant="success">Attiva</Badge>;
-      case 'completed':
-        return <Badge variant="secondary">Completata</Badge>;
-      case 'closed':
-        return <Badge variant="outline">Chiusa</Badge>;
-      default:
-        return null;
-    }
-  };
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [contributionsCount, setContributionsCount] = useState(0);
+  const supabase = createClientComponentClient();
 
-  // Calcola la percentuale di completamento
+  useEffect(() => {
+    async function fetchStats() {
+      const { data: contributions } = await supabase
+        .from('gift_contributions')
+        .select('amount')
+        .eq('collection_id', collection.id)
+        .eq('payment_status', 'completed');
+
+      if (contributions) {
+        const total = contributions.reduce(
+          (sum, contribution) => sum + contribution.amount,
+          0
+        );
+        setTotalAmount(total);
+        setContributionsCount(contributions.length);
+      }
+    }
+
+    fetchStats();
+  }, [collection.id, supabase]);
+
   const calculateProgress = () => {
     if (!collection.target_amount || collection.target_amount <= 0) {
       return 0;
     }
 
-    // Qui dovremmo calcolare l'importo effettivamente raccolto dalle contribuzioni
-    // Per ora usiamo un valore di esempio (implementeremo questa funzionalità in seguito)
-    const collectedAmount = 0; // Da sostituire con il calcolo reale
-
     const percentage = Math.min(
-      Math.round((collectedAmount / collection.target_amount) * 100),
+      Math.round((totalAmount / collection.target_amount) * 100),
       100
     );
     return percentage;
+  };
+
+  const getStatusBadge = () => {
+    switch (collection.status) {
+      case 'active':
+        return <Badge variant="success">Attiva</Badge>;
+      case 'completed':
+        return <Badge variant="default">Completata</Badge>;
+      case 'closed':
+        return <Badge variant="secondary">Chiusa</Badge>;
+      default:
+        return <Badge variant="outline">In attesa</Badge>;
+    }
   };
 
   return (
@@ -69,7 +92,7 @@ export function CollectionCard({ collection }: CollectionCardProps) {
             {collection.target_amount ? (
               <div>
                 <div className="mb-1 flex justify-between text-sm">
-                  <span>Raccolto: €0</span>
+                  <span>Raccolto: €{totalAmount.toFixed(2)}</span>
                   <span>Obiettivo: €{collection.target_amount}</span>
                 </div>
                 <Progress value={calculateProgress()} className="h-2" />
@@ -95,7 +118,10 @@ export function CollectionCard({ collection }: CollectionCardProps) {
 
               <div className="flex items-center">
                 <Users className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>0 donatori</span>
+                <span>
+                  {contributionsCount}{' '}
+                  {contributionsCount === 1 ? 'donatore' : 'donatori'}
+                </span>
               </div>
             </div>
           </div>

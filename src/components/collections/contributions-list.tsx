@@ -30,7 +30,13 @@ export function ContributionsList({ collectionId }: ContributionsListProps) {
 
         const { data, error } = await supabase
           .from('gift_contributions')
-          .select('*')
+          .select(`
+            *,
+            contributor:contributor_id (
+              email,
+              user_metadata
+            )
+          `)
           .eq('collection_id', collectionId)
           .order('created_at', { ascending: false });
 
@@ -76,9 +82,14 @@ export function ContributionsList({ collectionId }: ContributionsListProps) {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-medium">{contribution.donor_name}</span>
-                {contribution.donor_relation && (
-                  <Badge variant="outline">{contribution.donor_relation}</Badge>
+                <span className="font-medium">
+                  {contribution.contributor?.user_metadata?.full_name || 'Anonimo'}
+                </span>
+                {contribution.message && (
+                  <Badge variant="outline">
+                    <MessageSquare className="mr-1 h-3 w-3" />
+                    Ha lasciato un messaggio
+                  </Badge>
                 )}
               </div>
 
@@ -103,16 +114,21 @@ export function ContributionsList({ collectionId }: ContributionsListProps) {
               <div className="text-xl font-bold">
                 €{contribution.amount.toFixed(2)}
               </div>
-              {contribution.stripe_receipt_url && (
-                <a
-                  href={contribution.stripe_receipt_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-foreground"
-                >
-                  Vedi ricevuta
-                </a>
-              )}
+              <Badge
+                variant={
+                  contribution.payment_status === 'completed'
+                    ? 'success'
+                    : contribution.payment_status === 'pending'
+                    ? 'warning'
+                    : 'destructive'
+                }
+              >
+                {contribution.payment_status === 'completed'
+                  ? 'Completato'
+                  : contribution.payment_status === 'pending'
+                  ? 'In attesa'
+                  : 'Fallito'}
+              </Badge>
             </div>
           </div>
         </Card>

@@ -25,7 +25,7 @@ export default async function CollectionsPage() {
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-bold md:text-3xl">Le tue collezioni</h1>
-        <Link href="/collections/new">
+        <Link href="/create-gift">
           <Button variant="default">Nuova Collezione</Button>
         </Link>
       </div>

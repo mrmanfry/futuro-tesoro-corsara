@@ -6,6 +6,8 @@ export interface Profile {
   updated_at: Date;
   provider?: string;
   stripe_customer_id?: string;
+  mangopay_wallet_id?: string;
+  mangopay_user_id?: string;
 }
 
 export interface ChildProfile {
@@ -51,17 +53,19 @@ export interface BankProfile {
 export interface GiftContribution {
   id: string;
   collection_id: string;
+  contributor_id: string;
   amount: number;
-  donor_name: string;
-  created_at: Date;
   message?: string;
-  is_public: boolean;
-  stripe_session_id?: string;
-  stripe_payment_intent?: string;
-  customer_email?: string;
-  user_id?: string;
-  stripe_receipt_url?: string;
-  donor_relation?: string;
+  payment_status: 'pending' | 'completed' | 'failed';
+  external_payment_id?: string;
+  created_at: Date;
+  updated_at: Date;
+  contributor?: {
+    email: string;
+    user_metadata: {
+      full_name?: string;
+    };
+  };
 }
 
 export interface TransferRequest {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { z } from 'zod';
 
@@ -16,10 +16,26 @@ const authSchema = z.object({
 
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: from
+          ? `${window.location.origin}/auth/login?from=${from}`
+          : `${window.location.origin}/`,
+      },
+    });
+    setGoogleLoading(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,9 +46,14 @@ export function AuthForm({ mode }: AuthFormProps) {
       const validatedData = authSchema.parse({ email, password });
 
       if (mode === 'sign-up') {
+        const signupOptions: any = {};
+        if (from) {
+          signupOptions.emailRedirectTo = `${window.location.origin}/auth/login?from=${from}`;
+        }
         const { error: signUpError } = await supabase.auth.signUp({
           email: validatedData.email,
           password: validatedData.password,
+          options: signupOptions,
         });
 
         if (signUpError) throw signUpError;
@@ -44,7 +65,11 @@ export function AuthForm({ mode }: AuthFormProps) {
         });
 
         if (signInError) throw signInError;
-        router.push('/dashboard');
+        if (from === 'create-gift') {
+          router.push('/create-gift');
+        } else {
+          router.push('/dashboard');
+        }
       }
     } catch (err) {
       if (err instanceof z.ZodError) {
@@ -61,6 +86,25 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        disabled={googleLoading}
+        className="w-full bg-white border border-gray-300 text-gray-700 flex items-center justify-center gap-2 rounded-md px-4 py-2 font-medium shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-ftb-blue-500 focus:ring-offset-2 disabled:opacity-60"
+        aria-label={mode === 'sign-in' ? 'Accedi con Google' : 'Registrati con Google'}
+      >
+        <img src="/google-icon.svg" alt="Google" className="h-5 w-5" />
+        {googleLoading
+          ? 'Attendi...'
+          : mode === 'sign-in'
+            ? 'Accedi con Google'
+            : 'Registrati con Google'}
+      </button>
+      <div className="flex items-center my-4">
+        <div className="flex-grow border-t border-gray-200" />
+        <span className="mx-2 text-gray-400 text-xs">oppure</span>
+        <div className="flex-grow border-t border-gray-200" />
+      </div>
       <div>
         <label
           htmlFor="email"

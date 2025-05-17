@@ -1,10 +1,14 @@
+"use client";
 import { AuthForm } from '@/components/auth/AuthForm';
-import Navbar from '@/components/layout/Navbar';
+// import Navbar from '@/components/layout/Navbar';
+import { useSearchParams } from 'next/navigation';
 
 export default function RegisterPage() {
+  const searchParams = useSearchParams();
+  const from = searchParams.get('from');
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="flex min-h-[calc(100vh-64px)] flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
@@ -13,7 +17,7 @@ export default function RegisterPage() {
           <p className="mt-2 text-center text-sm text-gray-600">
             Oppure{' '}
             <a
-              href="/auth/login"
+              href={from ? `/auth/login?from=${from}` : '/auth/login'}
               className="font-medium text-ftb-blue-600 hover:text-ftb-blue-500"
             >
               accedi al tuo account esistente

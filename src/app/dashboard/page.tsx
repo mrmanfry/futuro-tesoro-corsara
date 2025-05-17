@@ -1,15 +1,58 @@
-import Navbar from '@/components/layout/Navbar';
+"use client";
+
+// import Navbar from '@/components/layout/Navbar';
 import Link from 'next/link';
+import { useWallet } from '@/hooks/useWallet';
+import WalletStatus from '@/components/wallet/WalletStatus';
+import { Skeleton } from '@/components/ui/skeleton';
+import { KYCStatusCard } from '@/components/dashboard/KYCStatusCard';
+import { ErrorMessage } from '@/components/ui/error-message';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle } from 'lucide-react';
 
 export default function DashboardPage() {
+  const { walletData, loading, error, refetch } = useWallet();
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {/* <Navbar /> */}
       <main className="py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
 
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {/* KYC Status Card */}
+            <div className="col-span-1">
+              <KYCStatusCard />
+            </div>
+
+            {/* Wallet Status Card */}
+            <div className="col-span-1">
+              {loading ? (
+                <Skeleton className="h-[200px] w-full" />
+              ) : error ? (
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5 text-yellow-500" />
+                      <CardTitle>Wallet non attivo</CardTitle>
+                    </div>
+                    <CardDescription>
+                      Per attivare il wallet e ricevere fondi, completa la verifica base dell'identità (Light KYC).
+                    </CardDescription>
+                  </CardHeader>
+                </Card>
+              ) : (
+                <WalletStatus
+                  walletStatus={walletData.walletStatus}
+                  walletSetupDeadline={walletData.walletSetupDeadline}
+                  escrowAmount={walletData.escrowAmount}
+                  availableAmount={walletData.availableAmount}
+                />
+              )}
+            </div>
+
             {/* Create New Collection Card */}
             <div className="overflow-hidden rounded-lg bg-white shadow">
               <div className="p-5">
@@ -41,7 +84,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="mt-5">
                   <Link
-                    href="/collections/new"
+                    href="/create-gift"
                     className="inline-flex items-center rounded-md border border-transparent bg-ftb-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-ftb-blue-700 focus:outline-none focus:ring-2 focus:ring-ftb-blue-500 focus:ring-offset-2"
                   >
                     Crea raccolta
@@ -119,7 +162,7 @@ export default function DashboardPage() {
                 </div>
                 <div className="mt-5">
                   <Link
-                    href="/settings"
+                    href="/profile"
                     className="inline-flex items-center rounded-md border border-transparent bg-ftb-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-ftb-blue-700 focus:outline-none focus:ring-2 focus:ring-ftb-blue-500 focus:ring-offset-2"
                   >
                     Impostazioni
